@@ -21,3 +21,14 @@ def add_songs_to_ytmusic_playlist(ytmusic, yt_playlist_id, songs):
                 count = 0
     if yt_songs:
         ytmusic.add_playlist_items(yt_playlist_id, yt_songs)
+
+# Helper function to get songs from a playlist
+def get_spotify_playlist_songs_helper(sp, playlist_id):
+    data = sp.playlist_items(playlist_id, offset=0)
+    next = data.get('next')
+    songs = data['items']
+    while next:
+        data = sp.next(data)
+        next = data.get('next')
+        songs += data['items']
+    return songs

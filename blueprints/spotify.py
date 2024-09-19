@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import ytmusicapi
-from utils.helpers import create_ytmusic_playlist, add_songs_to_ytmusic_playlist
+from utils.helpers import create_ytmusic_playlist, add_songs_to_ytmusic_playlist, get_spotify_playlist_songs_helper
 
 # Load environment variables
 load_dotenv()
@@ -37,6 +37,14 @@ def spotify_login():
 def spotify_callback():
     token_info = sp_oauth.get_access_token(request.args["code"])
     session["spotify_token_info"] = token_info
+    sp = spotipy.Spotify(auth=session["spotify_token_info"]["access_token"])
+    sp_user = sp.current_user()
+
+    session["current_user"] = {
+        "name": sp_user.get('display_name'),
+        "id": sp_user.get('id'),
+        "image": sp_user.get('images')[1 if len(sp_user.get('images')) > 1 else 0].get('url') 
+    }
     return redirect(os.getenv("FRONTEND_URL"))  # Redirect to frontend after login
 
 # Route to get Spotify playlists
@@ -54,20 +62,20 @@ def get_spotify_playlists():
 @spotify_bp.route('/playlist-songs')
 def get_spotify_playlist_songs():
     playlist_id = request.args.get('playlistId')
-    songs = get_spotify_playlist_songs_helper(playlist_id)
-    return jsonify(songs)
-
-# Helper function to get songs from a playlist
-def get_spotify_playlist_songs_helper(playlist_id):
+    print("Playlist ID", playlist_id)
     sp = spotipy.Spotify(auth=session["spotify_token_info"]["access_token"])
-    data = sp.playlist_items(playlist_id, offset=0)
-    next = data.get('next')
-    songs = data['items']
-    while next:
-        data = sp.next(data)
-        next = data.get('next')
-        songs += data['items']
-    return songs
+    songs = get_spotify_playlist_songs_helper(sp, playlist_id)
+    trimmed_songs = []
+    for song in songs:
+        trimmed_songs.append({
+            "id": song.get('track').get('id'),
+            "name": song.get('track').get('name'),
+            "artist": song.get('track').get('artists')[0].get('name'),
+            "album": song.get('track').get('album').get('name'),
+            "image": song.get('track').get('album').get('images')[0].get('url')
+        })
+    return jsonify(trimmed_songs)
+
 
 # Route to migrate Spotify playlist to YouTube Music
 @spotify_bp.route('/migrate-spotify-playlist')
@@ -75,7 +83,7 @@ def migrate_spotify_playlist():
     playlist_id = request.args.get('playlistId')
     sp = spotipy.Spotify(auth=session["spotify_token_info"]["access_token"])
     playlist = sp.playlist(playlist_id)
-    songs = get_spotify_playlist_songs_helper(playlist_id)
+    songs = get_spotify_playlist_songs_helper(sp, playlist_id)
 
     ytmusic = ytmusicapi.YTMusic(json.dumps(session["google_token_info"]))
 
