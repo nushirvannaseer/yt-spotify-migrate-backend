@@ -24,5 +24,14 @@ def get_yt_playlist_songs():
 
     playlist_id = request.args.get('playlistId')
     ytmusic = ytmusicapi.YTMusic(json.dumps(session["google_token_info"]))
-    songs = ytmusic.get_playlist(playlist_id)
-    return jsonify(songs)
+    playlist = ytmusic.get_playlist(playlist_id)
+    
+    songs = [{
+        'id': song.get('videoId'),
+        'title': song.get('title'), 
+        'artist': song.get('artists')[0].get('name'), 
+        'album': song.get('album').get('name') if song.get('album') else "", 
+        'image': song.get('thumbnails')[0].get('url')
+    } for song in playlist.get('tracks')]
+    
+    return jsonify({"playlist_name": playlist.get('title'), "songs": songs})

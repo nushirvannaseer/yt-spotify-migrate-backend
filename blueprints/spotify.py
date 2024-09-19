@@ -62,8 +62,8 @@ def get_spotify_playlists():
 @spotify_bp.route('/playlist-songs')
 def get_spotify_playlist_songs():
     playlist_id = request.args.get('playlistId')
-    print("Playlist ID", playlist_id)
     sp = spotipy.Spotify(auth=session["spotify_token_info"]["access_token"])
+    playlist_name = sp.playlist(playlist_id).get('name')
     songs = get_spotify_playlist_songs_helper(sp, playlist_id)
     trimmed_songs = []
     for song in songs:
@@ -74,7 +74,7 @@ def get_spotify_playlist_songs():
             "album": song.get('track').get('album').get('name'),
             "image": song.get('track').get('album').get('images')[0].get('url')
         })
-    return jsonify(trimmed_songs)
+    return jsonify({"playlist_name": playlist_name, "songs": trimmed_songs})
 
 
 # Route to migrate Spotify playlist to YouTube Music
