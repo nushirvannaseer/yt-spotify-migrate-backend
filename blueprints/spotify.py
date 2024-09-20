@@ -96,7 +96,7 @@ def migrate_spotify_playlist():
     return jsonify({"yt_playlist_id": yt_playlist_id})
 
 @spotify_bp.route('/migrate-songs', methods=['POST'])
-def migrate_one_song():
+def migrate_multiple_songs ():
     body = request.get_json()
     songs = body.get('songs')
     yt_playlist_id = body.get('yt_playlist_id') if body.get('yt_playlist_id') else None
@@ -113,9 +113,9 @@ def migrate_one_song():
             added_songs.append(ytmusic_song_id)
             count += 1
             if count == 20:
-                sp.playlist_add_items(yt_playlist_id, added_songs)
+                ytmusic.add_playlist_items(yt_playlist_id, added_songs)
                 added_songs = []
                 count = 0
     if added_songs:
-        sp.playlist_add_items(yt_playlist_id, added_songs)
+        ytmusic.add_playlist_items(yt_playlist_id, added_songs)
     return jsonify({"yt_playlist_id": yt_playlist_id})
