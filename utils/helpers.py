@@ -1,4 +1,6 @@
+import random
 import re
+from utils.constants import adjectives, nouns
 
 # Helper function to create YouTube Music playlist
 def create_ytmusic_playlist(ytmusic, name, description):
@@ -32,3 +34,9 @@ def get_spotify_playlist_songs_helper(sp, playlist_id):
         next = data.get('next')
         songs += data['items']
     return songs
+
+
+def generate_random_name():
+    random_adjective = random.choice(adjectives)
+    random_noun = random.choice(nouns)
+    return f"{random_adjective}-{random_noun}"

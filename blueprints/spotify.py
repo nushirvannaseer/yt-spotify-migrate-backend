@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import ytmusicapi
-from utils.helpers import create_ytmusic_playlist, add_songs_to_ytmusic_playlist, get_spotify_playlist_songs_helper
+from utils.helpers import create_ytmusic_playlist, add_songs_to_ytmusic_playlist, generate_random_name, get_spotify_playlist_songs_helper
 
 # Load environment variables
 load_dotenv()
@@ -93,4 +93,29 @@ def migrate_spotify_playlist():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    return "Playlist migrated successfully!"
+    return jsonify({"yt_playlist_id": yt_playlist_id})
+
+@spotify_bp.route('/migrate-songs', methods=['POST'])
+def migrate_one_song():
+    body = request.get_json()
+    songs = body.get('songs')
+    yt_playlist_id = body.get('yt_playlist_id') if body.get('yt_playlist_id') else None
+    if not yt_playlist_id:
+        ytmusic = ytmusicapi.YTMusic(json.dumps(session["google_token_info"]))
+        yt_playlist_id = create_ytmusic_playlist(ytmusic, generate_random_name(), "These songs were migrated to Spotify using Movesic")
+
+    sp = spotipy.Spotify(auth=session["spotify_token_info"]["access_token"])
+    count = 0
+    added_songs = []
+    for song in songs:
+        ytmusic_song_id = ytmusic.search(song.get('name') + " " + song.get('artist'))[0]['videoId']
+        if ytmusic_song_id:
+            added_songs.append(ytmusic_song_id)
+            count += 1
+            if count == 20:
+                sp.playlist_add_items(yt_playlist_id, added_songs)
+                added_songs = []
+                count = 0
+    if added_songs:
+        sp.playlist_add_items(yt_playlist_id, added_songs)
+    return jsonify({"yt_playlist_id": yt_playlist_id})
