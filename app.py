@@ -32,6 +32,9 @@ def session_info():
 
 @app.route('/logout')
 def logout():
+    session['spotify_token_info'] = None
+    session['google_token_info'] = None 
+    session['current_user'] = None
     session.clear()
     response = jsonify({"message": "Logged out successfully"})
     response.set_cookie('session', '', expires=0)  # Expire the session cookie
