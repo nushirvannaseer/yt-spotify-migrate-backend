@@ -99,12 +99,11 @@ def migrate_spotify_playlist():
 def migrate_multiple_songs ():
     body = request.get_json()
     songs = body.get('songs')
-    yt_playlist_id = body.get('yt_playlist_id') if body.get('yt_playlist_id') else None
-    if not yt_playlist_id:
-        ytmusic = ytmusicapi.YTMusic(json.dumps(session["google_token_info"]))
-        yt_playlist_id = create_ytmusic_playlist(ytmusic, generate_random_name(), "These songs were migrated to Spotify using Movesic")
+    print("body", body)
+    yt_playlist_name = body.get('yt_playlist_name') if body.get('yt_playlist_name') else None
+    ytmusic = ytmusicapi.YTMusic(json.dumps(session["google_token_info"]))
+    yt_playlist_id = create_ytmusic_playlist(ytmusic, yt_playlist_name if yt_playlist_name else generate_random_name(), "These songs were migrated to Spotify using Movesic")
 
-    sp = spotipy.Spotify(auth=session["spotify_token_info"]["access_token"])
     count = 0
     added_songs = []
     for song in songs:
