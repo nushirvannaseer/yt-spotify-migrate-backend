@@ -45,7 +45,25 @@ def spotify_callback():
         "id": sp_user.get('id'),
         "image": sp_user.get('images')[1 if len(sp_user.get('images')) > 1 else 0].get('url') 
     }
+    
     return redirect(os.getenv("FRONTEND_URL"))  # Redirect to frontend after login
+
+@spotify_bp.route('/refresh-token', methods=['POST'])
+def refresh_token():
+    refresh_token = request.json.get('refresh_token')
+    
+    # Request a new access token using the refresh token
+    token_info = sp_oauth.refresh_access_token(refresh_token)
+    
+    # Update the session with the new access token
+    session["spotify_token_info"] = token_info
+    print("token_info", token_info)
+    
+    return jsonify({
+        "access_token": token_info['access_token'],
+        "expires_in": token_info['expires_in'],
+        "expires_at": token_info['expires_at']
+    })
 
 # Route to get Spotify playlists
 @spotify_bp.route('/playlists')
