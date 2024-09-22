@@ -43,7 +43,7 @@ def spotify_callback():
     session["current_user"] = {
         "name": sp_user.get('display_name'),
         "id": sp_user.get('id'),
-        "image": sp_user.get('images')[1 if len(sp_user.get('images')) > 1 else 0].get('url') 
+        "image": (sp_user.get('images')[1 if len(sp_user.get('images')) > 1 else 0].get('url')) if sp_user.get('images') else None
     }
     
     return redirect(os.getenv("FRONTEND_URL"))  # Redirect to frontend after login
