@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import ytmusicapi
+from spotipy.cache_handler import CacheHandler
 from utils.helpers import create_ytmusic_playlist, add_songs_to_ytmusic_playlist, generate_random_name, get_spotify_playlist_songs_helper
 
 # Load environment variables
@@ -19,12 +20,22 @@ client_id = os.getenv('SPOTIFY_CLIENT_ID')
 client_secret = os.getenv('SPOTIFY_CLIENT_SECRET')
 redirect_uri = os.getenv('SPOTIFY_REDIRECT_URI')
 
+class NoOpCacheHandler(CacheHandler):
+    def get_cached_token(self):
+        return None  # Always return None to indicate no cached token
+
+    def save_token_to_cache(self, token_info):
+        pass  # Do nothing, effectively disabling caching
+
+
 sp_oauth = SpotifyOAuth(
     client_id=client_id,
     client_secret=client_secret,
     redirect_uri=redirect_uri,
     scope="user-library-read playlist-modify-private playlist-modify-public playlist-read-collaborative",
-    cache_path=None
+    cache_path=None,
+    cache_handler=NoOpCacheHandler(),
+    show_dialog=True
 )
 
 # Route to initiate Spotify login
@@ -104,12 +115,13 @@ def get_spotify_playlist_songs():
                 "name": song.get('track').get('name'),
                 "artist": song.get('track').get('artists')[0].get('name'),
                 "album": song.get('track').get('album').get('name'),
-                "image": song.get('track').get('album').get('images')[0].get('url')
+                "image": song.get('track').get('album').get('images')[0].get('url'),
+                "url": song.get('track').get('external_urls').get('spotify')
             })
         return jsonify({"playlist_name": playlist_name, "songs": trimmed_songs})
     except Exception as e:
         print(e)
-        return jsonify({"error": str(e.message)}), 500
+        return jsonify({"error": str(e)}), 500
 
 # Route to migrate Spotify playlist to YouTube Music
 @spotify_bp.route('/migrate-spotify-playlist')
@@ -139,7 +151,7 @@ def migrate_multiple_songs():
         songs = body.get('songs')
         yt_playlist_name = body.get('yt_playlist_name') if body.get('yt_playlist_name') else None
         ytmusic = ytmusicapi.YTMusic(json.dumps(session["google_token_info"]))
-        yt_playlist_id = create_ytmusic_playlist(ytmusic, yt_playlist_name if yt_playlist_name else generate_random_name(), "These songs were migrated to Spotify using Movesic")
+        yt_playlist_id = create_ytmusic_playlist(ytmusic, yt_playlist_name if yt_playlist_name else generate_random_name(), "These songs were migrated to Spotify using Movezic")
 
         count = 0
         added_songs = []

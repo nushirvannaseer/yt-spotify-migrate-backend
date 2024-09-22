@@ -38,7 +38,8 @@ def get_yt_playlist_songs():
             'title': song.get('title'), 
             'artist': song.get('artists')[0].get('name'), 
             'album': song.get('album').get('name') if song.get('album') else "", 
-            'image': song.get('thumbnails')[0].get('url')
+            'image': song.get('thumbnails')[0].get('url'),
+            'url': f"https://music.youtube.com/watch?v={song.get('videoId')}"
         } for song in playlist.get('tracks')]
         
         return jsonify({"playlist_name": playlist.get('title'), "songs": songs})
