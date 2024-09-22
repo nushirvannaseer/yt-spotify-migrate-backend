@@ -53,6 +53,7 @@ def spotify_callback():
         
         return redirect(os.getenv("FRONTEND_URL"))  # Redirect to frontend after login
     except Exception as e:
+        del session['spotify_token_info']
         return jsonify({"error": str(e)}), 500
 
 @spotify_bp.route('/refresh-token', methods=['POST'])
