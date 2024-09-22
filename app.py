@@ -1,5 +1,6 @@
 # app.py
-from flask import Flask, jsonify, session
+from pprint import pprint
+from flask import Flask, json, jsonify, session
 from dotenv import load_dotenv
 from flask_cors import CORS
 from blueprints.spotify import spotify_bp  # Import the Spotify blueprint
@@ -25,13 +26,17 @@ app.register_blueprint(ytmusic_bp, url_prefix='/ytmusic')
 
 @app.route('/session')
 def session_info():
-    print("Session info requested", session)
+    print("Session info requested")
+    pprint(json.dumps(dict(session), indent=4))
     if 'spotify_token_info' in session or 'google_token_info' in session:
         return jsonify(dict(session))
     return jsonify({"message": "No user logged in"}), 401
 
 @app.route('/logout')
 def logout():
+    print("Logging out")
+    pprint(json.dumps(dict(session), indent=4))
+
     session['spotify_token_info'] = None
     session['google_token_info'] = None 
     session['current_user'] = None
