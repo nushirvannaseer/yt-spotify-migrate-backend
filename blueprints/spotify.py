@@ -23,7 +23,8 @@ sp_oauth = SpotifyOAuth(
     client_id=client_id,
     client_secret=client_secret,
     redirect_uri=redirect_uri,
-    scope="user-library-read playlist-modify-private playlist-modify-public playlist-read-collaborative"
+    scope="user-library-read playlist-modify-private playlist-modify-public playlist-read-collaborative",
+    cache_path=None
 )
 
 # Route to initiate Spotify login
@@ -106,7 +107,8 @@ def get_spotify_playlist_songs():
             })
         return jsonify({"playlist_name": playlist_name, "songs": trimmed_songs})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(e)
+        return jsonify({"error": str(e.message)}), 500
 
 # Route to migrate Spotify playlist to YouTube Music
 @spotify_bp.route('/migrate-spotify-playlist')

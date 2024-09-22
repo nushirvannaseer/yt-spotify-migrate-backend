@@ -10,7 +10,7 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SESSION_SECRET")
+app.config['SECRET_KEY'] = os.getenv("SESSION_SECRET")
 app.config['SESSION_COOKIE_SECURE'] = True  # Ensures cookies are only sent over HTTPS
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 
@@ -26,9 +26,9 @@ app.register_blueprint(ytmusic_bp, url_prefix='/ytmusic')
 
 @app.route('/session')
 def session_info():
-    if 'spotify_token_info' in session or 'google_token_info' in session:
+    if ('spotify_token_info' in session and 'current_user' in session) or 'google_token_info' in session:
         return jsonify(dict(session))
-    return jsonify({"message": "No user logged in"}), 401
+    return jsonify({"error": "No user logged in"}), 401
 
 @app.route('/logout')
 def logout():
