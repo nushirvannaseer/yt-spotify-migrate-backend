@@ -117,6 +117,3 @@ nouns = [
     "whistle", "wig", "willow", "wombat", "yacht", "yak", "yam", "yawn", "yeast", 
     "yeti", "yogurt", "zeppelin", "zombie", "zucchini"
 ]
-
-print(len(adjectives))
-print(len(nouns))
