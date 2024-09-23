@@ -43,6 +43,19 @@ def get_spotify_playlist_songs_helper(sp, playlist_id):
         return songs
     except Exception as e:
         return f"Error getting Spotify playlist songs: {e}"
+    
+def get_spotify_playlists_helper(sp, limit=50):
+    try:
+        data = sp.current_user_playlists(limit=limit)
+        next = data.get('next')
+        playlists = data['items']
+        while next:
+            data = sp.next(data)
+            next = data.get('next')
+            playlists += data['items']
+        return playlists
+    except Exception as e:
+        return f"Error getting Spotify playlists: {e}"
 
 def generate_random_name():
     try:

@@ -7,7 +7,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import ytmusicapi
 from spotipy.cache_handler import CacheHandler
-from utils.helpers import create_ytmusic_playlist, add_songs_to_ytmusic_playlist, generate_random_name, get_spotify_playlist_songs_helper
+from utils.helpers import create_ytmusic_playlist, add_songs_to_ytmusic_playlist, generate_random_name, get_spotify_playlist_songs_helper, get_spotify_playlists_helper
 
 # Load environment variables
 load_dotenv()
@@ -95,7 +95,7 @@ def get_spotify_playlists():
             return redirect("/spotify-login")
 
         sp = spotipy.Spotify(auth=token_info["access_token"])
-        playlists = sp.current_user_playlists()
+        playlists = get_spotify_playlists_helper(sp, limit=50)
         return jsonify(playlists)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
