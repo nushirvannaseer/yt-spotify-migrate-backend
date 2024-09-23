@@ -110,14 +110,17 @@ def get_spotify_playlist_songs():
         songs = get_spotify_playlist_songs_helper(sp, playlist_id)
         trimmed_songs = []
         for song in songs:
-            trimmed_songs.append({
-                "id": song.get('track').get('id'),
-                "name": song.get('track').get('name'),
-                "artist": song.get('track').get('artists')[0].get('name'),
-                "album": song.get('track').get('album').get('name'),
-                "image": song.get('track').get('album').get('images')[0].get('url'),
-                "url": song.get('track').get('external_urls').get('spotify')
-            })
+            try:
+                trimmed_songs.append({
+                    "id": song.get('track').get('id'),
+                    "name": song.get('track').get('name'),
+                    "artist": song.get('track').get('artists')[0].get('name'),
+                    "album": song.get('track').get('album').get('name'),
+                    "image": song.get('track').get('album').get('images')[0].get('url'),
+                    "url": song.get('track').get('external_urls').get('spotify')
+                })
+            except Exception as e:
+                print(e)
         return jsonify({"playlist_name": playlist_name, "songs": trimmed_songs})
     except Exception as e:
         print(e)
